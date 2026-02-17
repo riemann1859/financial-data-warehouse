@@ -10,11 +10,17 @@ The goal of this repository is to demonstrate production-oriented data ingestion
 ## Architecture Overview
 
 Yahoo Finance API
+
         ↓
+        
 Cloud Run (Python ingestion jobs)
+
         ↓
+        
 BigQuery (RAW layer tables)
+
         ↓
+        
 Looker Studio (visualization)
 
 ---
