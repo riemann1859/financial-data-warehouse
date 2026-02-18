@@ -2,3 +2,4 @@ pandas
 yfinance
 google-cloud-bigquery
 pyarrow
+
