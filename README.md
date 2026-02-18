@@ -9,12 +9,12 @@ The goal of this repository is to demonstrate production-oriented data ingestion
 
 ## Architecture Overview
 
-Yahoo Finance API
-        ↓
-Cloud Run (Python ingestion jobs)
-        ↓
-BigQuery (RAW layer tables)
-        ↓
+Yahoo Finance API  
+        ↓  
+Cloud Run (Python ingestion jobs)  
+        ↓  
+BigQuery (RAW layer tables)  
+        ↓  
 Looker Studio (visualization)
 
 ---
@@ -27,6 +27,25 @@ Looker Studio (visualization)
 - BigQuery
 - Looker Studio
 - GitHub (version control)
+
+---
+
+## Environment & Infrastructure Setup
+
+Before running ingestion jobs, the BigQuery raw layer must be provisioned using the CLI.
+
+This repository follows an infrastructure-first approach: datasets and tables are created using version-controlled SQL files instead of manual UI configuration.
+
+Setup includes:
+
+- Creating a Python virtual environment
+- Configuring Google Cloud SDK (`gcloud`, `bq`)
+- Executing raw layer DDL via CLI
+- Ensuring correct BigQuery region configuration (EU)
+
+For detailed step-by-step instructions (PowerShell vs CMD commands, common errors, and region considerations), see:
+
+➡️ `docs/setup.md`
 
 ---
 
@@ -47,18 +66,18 @@ Looker Studio (visualization)
 
 ## Data Model (RAW Layer)
 
-### Table: `raw_prices_daily`
+### Table: `market_raw.stock_prices`
 
-| Column      | Type      | Description                     |
-|------------|----------|---------------------------------|
-| asset_id   | STRING   | Ticker symbol                   |
-| trade_date | DATE     | Trading date                    |
-| open       | FLOAT    | Opening price                   |
-| high       | FLOAT    | Highest price of the day        |
-| low        | FLOAT    | Lowest price of the day         |
-| close      | FLOAT    | Closing price                   |
-| volume     | INT64    | Daily traded volume             |
-| load_ts    | TIMESTAMP| Ingestion timestamp             |
+| Column         | Type      | Description                     |
+|---------------|-----------|---------------------------------|
+| symbol        | STRING    | Ticker symbol                   |
+| trade_date    | DATE      | Trading date                    |
+| open          | FLOAT64   | Opening price                   |
+| high          | FLOAT64   | Highest price of the day        |
+| low           | FLOAT64   | Lowest price of the day         |
+| close         | FLOAT64   | Closing price                   |
+| volume        | INT64     | Daily traded volume             |
+| load_timestamp| TIMESTAMP | Ingestion timestamp             |
 
 ---
 
@@ -92,7 +111,5 @@ Daily ingestion job is triggered via:
 
 ## Disclaimer
 
-This project is for educational and demonstration purposes only.
+This project is for educational and demonstration purposes only.  
 Market data is sourced from publicly available APIs.
-# financial-data-warehouse
-Financial market data warehouse on BigQuery with dbt transformations and Looker Studio dashboards.
