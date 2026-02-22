@@ -2,4 +2,5 @@ pandas
 yfinance
 google-cloud-bigquery
 pyarrow
+pandas-gbq>=0.26.1
 
