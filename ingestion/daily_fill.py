@@ -233,10 +233,7 @@ def write_partition_overwrite(
     partition_id = target.strftime("%Y%m%d")
     destination = f"{project_id}.{dataset}.{table}${partition_id}"
 
-    ingested_at = datetime.now(timezone.utc).isoformat()
 
-    for r in rows:
-        r["ingested_at"] = ingested_at
 
     job_config = bigquery.LoadJobConfig(
         write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE
