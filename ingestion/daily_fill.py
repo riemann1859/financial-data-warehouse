@@ -192,7 +192,6 @@ def fetch_ohlcv(symbols: List[str], target: date) -> List[Dict]:
         low_v = _scalar(s.get("Low"))
         close_v = _scalar(s.get("Close"))
         vol_v = _scalar(s.get("Volume"))
-        ingest_ts = datetime.now(timezone.utc)  # TIMESTAMP için doğru format
 
         # rows.append(...) içinde:
 
@@ -206,7 +205,7 @@ def fetch_ohlcv(symbols: List[str], target: date) -> List[Dict]:
                 "low": float(low_v) if low_v is not None else None,
                 "close": float(close_v) if close_v is not None else None,
                 "volume": int(vol_v) if vol_v is not None else None,
-                "load_timestamp": ingest_ts
+              
             }
         )
 
@@ -230,20 +229,39 @@ def write_partition_overwrite(
     BigQuery partition decorator:
     table$YYYYMMDD formatı sadece o partition'ı overwrite eder.
     """
+
+    # If no data returned (weekend/holiday/API empty), don't write anything.
+    # This avoids schema-inference edge cases and unnecessary BigQuery load jobs.
+    if not rows:
+        print(f"No rows returned for {target}. Skipping load.")
+        return
+
     partition_id = target.strftime("%Y%m%d")
     destination = f"{project_id}.{dataset}.{table}${partition_id}"
 
+    from datetime import datetime, timezone
 
+    # BigQuery JSON load expects JSON-serializable values.
+    # TIMESTAMP fields should be provided as ISO8601 strings.
+    load_ts = datetime.now(timezone.utc).isoformat()
+
+    # Ensure REQUIRED field is always present and JSON-serializable.
+    # IMPORTANT: your BigQuery table has load_timestamp as REQUIRED.
+    for r in rows:
+        r["load_timestamp"] = load_ts
+
+    # ✅ Prevent "REQUIRED -> NULLABLE" schema mismatch by using the table's existing schema.
+    # Autodetect often marks fields as NULLABLE, which conflicts with REQUIRED fields.
+    base_table_id = f"{project_id}.{dataset}.{table}"
+    base_table = bq.get_table(base_table_id)
 
     job_config = bigquery.LoadJobConfig(
-        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE
-        # WRITE_TRUNCATE:
-        # Var olan partition içeriğini siler ve yenisini yazar.
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+        schema=base_table.schema,  # exact match (modes included)
     )
 
     job = bq.load_table_from_json(rows, destination, job_config=job_config)
-    job.result()  # job bitene kadar bekler
-
+    job.result()  # wait until the job finishes
 
 # ---------------------------------------------------------
 # Main
