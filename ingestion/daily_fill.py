@@ -14,6 +14,11 @@ from zoneinfo import ZoneInfo  # Timezone-aware datetime üretmek için (örn Eu
 from google.cloud import bigquery  # BigQuery client library
 
 
+
+
+
+
+
 # ---------------------------------------------------------
 # Logging Setup
 # ---------------------------------------------------------
@@ -187,6 +192,10 @@ def fetch_ohlcv(symbols: List[str], target: date) -> List[Dict]:
         low_v = _scalar(s.get("Low"))
         close_v = _scalar(s.get("Close"))
         vol_v = _scalar(s.get("Volume"))
+        ingest_ts = datetime.now(timezone.utc)  # TIMESTAMP için doğru format
+
+        # rows.append(...) içinde:
+
 
         rows.append(
             {
@@ -197,6 +206,7 @@ def fetch_ohlcv(symbols: List[str], target: date) -> List[Dict]:
                 "low": float(low_v) if low_v is not None else None,
                 "close": float(close_v) if close_v is not None else None,
                 "volume": int(vol_v) if vol_v is not None else None,
+                "load_timestamp": ingest_ts
             }
         )
 
